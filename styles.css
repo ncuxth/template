@@ -1,0 +1,385 @@
+:root {
+  --page-margin-x: 48px;
+  --page-margin-y: 36px;
+  --base-font-size: 13px;
+  --heading-font-size: 15px;
+  --name-font-size: 21px;
+  --line-height: 1.48;
+  --paragraph-gap: 3px;
+  --resume-font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+  --normal-text-color: #27313b;
+  --fit-scale: 1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: #27313b;
+  background: #2f2f2f;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  min-height: 100vh;
+}
+
+.preview-pane {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 8px 18px 32px;
+  overflow: auto;
+}
+
+.resume-page {
+  width: 210mm;
+  height: 297mm;
+  padding: var(--page-margin-y) var(--page-margin-x);
+  overflow: hidden;
+  color: var(--normal-text-color);
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  font-family: var(--resume-font-family);
+  font-size: var(--base-font-size);
+  line-height: var(--line-height);
+}
+
+.resume-content {
+  width: calc(100% / var(--fit-scale));
+  color: var(--normal-text-color);
+  transform: scale(var(--fit-scale));
+  transform-origin: top left;
+}
+
+.resume-page h1,
+.resume-page h2,
+.resume-page h3,
+.resume-page h4,
+.resume-page p,
+.resume-page ol,
+.resume-page ul {
+  margin-top: 0;
+}
+
+.resume-header {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.resume-header h1 {
+  margin: 0 0 3px;
+  color: #132334;
+  font-size: var(--name-font-size);
+  line-height: 1.25;
+}
+
+.resume-header p {
+  margin: 0;
+  font-size: var(--base-font-size);
+}
+
+.section {
+  margin-top: 8px;
+}
+
+.section-title {
+  margin: 0 0 4px;
+  padding-bottom: 1px;
+  border-bottom: 2px solid #262626;
+  color: #141a22;
+  font-size: var(--heading-font-size);
+  line-height: 1.35;
+}
+
+.entry-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: baseline;
+  column-gap: 18px;
+  width: 100%;
+}
+
+.entry-main {
+  min-width: 0;
+}
+
+.entry-date {
+  justify-self: end;
+  white-space: nowrap;
+  color: #34495e;
+  font-weight: 500;
+}
+
+.resume-page h3 {
+  margin-bottom: 2px;
+  color: #1f2933;
+  font-size: calc(var(--base-font-size) + 1px);
+  line-height: 1.4;
+}
+
+.resume-page h4 {
+  margin-bottom: 0;
+  color: #18212b;
+  font-size: var(--base-font-size);
+  line-height: 1.5;
+}
+
+.resume-page p {
+  margin-bottom: var(--paragraph-gap);
+}
+
+.resume-page ol,
+.resume-page ul {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+.resume-page li {
+  margin-bottom: max(1px, calc(var(--paragraph-gap) - 1px));
+}
+
+.resume-page strong {
+  color: #15202b;
+  font-weight: 700;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-left: 8px;
+  padding: 0 8px;
+  border-radius: 2px;
+  background: #dff2ff;
+  color: #169bd5;
+  font-size: calc(var(--base-font-size) - 0.5px);
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.project-separator {
+  margin: 7px 0 5px;
+  border: 0;
+  border-top: 2px solid #262626;
+}
+
+.control-panel {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 18px;
+  overflow: auto;
+  border-left: 1px solid #d9dee6;
+  background: #f6f8fb;
+  color: #17212b;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.panel-header h1 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.panel-header p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 13px;
+}
+
+.panel-section {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #dfe4ec;
+}
+
+.panel-section h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panel-section label {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+  color: #263241;
+  font-size: 13px;
+}
+
+.panel-section label span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-section output {
+  color: #667085;
+}
+
+.panel-section input[type="range"] {
+  width: 100%;
+}
+
+.panel-section select {
+  width: 100%;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #cfd6e0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.primary-button,
+.ghost-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary-button {
+  border: 1px solid #1677c8;
+  background: #1677c8;
+  color: #fff;
+}
+
+.ghost-button {
+  border: 1px solid #cfd6e0;
+  background: #fff;
+  color: #27313b;
+}
+
+.file-status {
+  margin: -2px 0 8px;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.editor-section {
+  display: flex;
+  flex: 1;
+  min-height: 420px;
+  flex-direction: column;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+#markdownInput {
+  flex: 1;
+  width: 100%;
+  min-height: 360px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid #cfd6e0;
+  border-radius: 8px;
+  background: #fff;
+  color: #17212b;
+  font-family: Consolas, "Microsoft YaHei", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    position: static;
+    height: auto;
+    border-left: 0;
+    border-top: 1px solid #d9dee6;
+  }
+}
+
+@media (max-width: 760px) {
+  .preview-pane {
+    padding: 0;
+  }
+
+  .resume-page {
+    width: 100%;
+    height: auto;
+    min-height: 297mm;
+    box-shadow: none;
+  }
+
+  .entry-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1px;
+  }
+
+  .entry-date {
+    justify-self: start;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+  }
+
+  .control-panel {
+    display: none;
+  }
+
+  .app-shell {
+    display: block;
+  }
+
+  .preview-pane {
+    display: block;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .resume-page {
+    width: 210mm;
+    height: 297mm;
+    padding: var(--page-margin-y) var(--page-margin-x);
+    overflow: hidden;
+    box-shadow: none;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}

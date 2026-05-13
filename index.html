@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown 简历模板渲染器</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="preview-pane" aria-label="简历预览">
+        <article id="resumePreview" class="resume-page"></article>
+      </main>
+
+      <aside class="control-panel" aria-label="简历设置">
+        <div class="panel-header">
+          <div>
+            <h1>简历模板</h1>
+            <p>Markdown 实时渲染</p>
+          </div>
+          <button id="printBtn" class="primary-button" type="button">打印</button>
+        </div>
+
+        <section class="panel-section">
+          <h2>页面</h2>
+          <label>
+            <span>左右页边距 <output id="marginXValue"></output></span>
+            <input id="marginX" type="range" min="24" max="72" step="1" />
+          </label>
+          <label>
+            <span>上下页边距 <output id="marginYValue"></output></span>
+            <input id="marginY" type="range" min="20" max="64" step="1" />
+          </label>
+        </section>
+
+        <section class="panel-section">
+          <h2>文字</h2>
+          <label>
+            <span>字体</span>
+            <select id="fontFamily">
+              <option value='"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif'>微软雅黑 / 苹方</option>
+              <option value='"Alibaba PuHuiTi", "Alibaba PuHuiTi 3.0", "Alibaba PuHuiTi 2.0", "AlibabaPuHuiTi", "AlibabaPuHuiTi-3-45-Light", "Microsoft YaHei", sans-serif'>阿里巴巴普惠体</option>
+              <option value='"SimSun", "Songti SC", serif'>宋体</option>
+              <option value='"KaiTi", "Kaiti SC", serif'>楷体</option>
+              <option value='Arial, "Microsoft YaHei", sans-serif'>Arial</option>
+            </select>
+          </label>
+          <label>
+            <span>普通文字深浅 <output id="normalTextDepthValue"></output></span>
+            <input id="normalTextDepth" type="range" min="0" max="100" step="1" />
+          </label>
+          <label>
+            <span>正文字号 <output id="baseFontSizeValue"></output></span>
+            <input id="baseFontSize" type="range" min="11" max="16" step="0.5" />
+          </label>
+          <label>
+            <span>标题字号 <output id="headingFontSizeValue"></output></span>
+            <input id="headingFontSize" type="range" min="13" max="20" step="0.5" />
+          </label>
+          <label>
+            <span>姓名字号 <output id="nameFontSizeValue"></output></span>
+            <input id="nameFontSize" type="range" min="18" max="30" step="1" />
+          </label>
+          <label>
+            <span>行距 <output id="lineHeightValue"></output></span>
+            <input id="lineHeight" type="range" min="1.25" max="1.8" step="0.01" />
+          </label>
+          <label>
+            <span>段落间距 <output id="paragraphGapValue"></output></span>
+            <input id="paragraphGap" type="range" min="0" max="10" step="1" />
+          </label>
+        </section>
+
+        <section class="panel-section editor-section">
+          <div class="section-title-row">
+            <h2>Markdown</h2>
+            <button id="openMdBtn" class="ghost-button" type="button">选择MD</button>
+          </div>
+          <p id="fileStatus" class="file-status">请选择 Markdown 文件。</p>
+          <textarea id="markdownInput" spellcheck="false" aria-label="Markdown 简历内容"></textarea>
+        </section>
+      </aside>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
