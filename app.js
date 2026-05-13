@@ -15,6 +15,11 @@ const STORAGE_KEYS = {
 };
 
 let isLoadingMarkdown = false;
+let markdownFileHandle = null;
+let lastKnownFileModified = 0;
+let pendingSaveTimer = null;
+let hasPendingLocalSave = false;
+let isWritingMarkdown = false;
 
 const els = {
   preview: document.querySelector("#resumePreview"),
@@ -303,29 +308,106 @@ function loadMarkdown(markdown, status) {
 }
 
 function loadInitialMarkdown() {
-  loadMarkdown("", "请选择 Markdown 文件。");
+  loadMarkdown("", "请选择 Markdown 文件，选择后会自动双向同步。");
 }
 
-function openMarkdownFile() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".md,.markdown,.txt,text/markdown,text/plain";
+async function verifyFilePermission(handle, mode = "read") {
+  if (!handle?.queryPermission) {
+    return false;
+  }
 
-  input.addEventListener("change", async () => {
-    const file = input.files?.[0];
-    if (!file) {
+  const options = { mode };
+  if ((await handle.queryPermission(options)) === "granted") {
+    return true;
+  }
+
+  return (await handle.requestPermission(options)) === "granted";
+}
+
+async function readMarkdownFile() {
+  const file = await markdownFileHandle.getFile();
+  lastKnownFileModified = file.lastModified;
+  return await file.text();
+}
+
+async function writeMarkdownFile() {
+  if (!markdownFileHandle || isLoadingMarkdown) {
+    return;
+  }
+
+  try {
+    isWritingMarkdown = true;
+    const writable = await markdownFileHandle.createWritable();
+    await writable.write(els.markdown.value);
+    await writable.close();
+
+    const file = await markdownFileHandle.getFile();
+    lastKnownFileModified = file.lastModified;
+    hasPendingLocalSave = false;
+    setStatus(`已自动保存到 ${markdownFileHandle.name}。外部修改也会自动刷新。`);
+  } catch (error) {
+    setStatus(`自动保存失败：${error.message}`);
+  } finally {
+    isWritingMarkdown = false;
+  }
+}
+
+function scheduleMarkdownSave() {
+  if (!markdownFileHandle || isLoadingMarkdown) {
+    return;
+  }
+
+  hasPendingLocalSave = true;
+  clearTimeout(pendingSaveTimer);
+  setStatus(`正在等待保存到 ${markdownFileHandle.name}...`);
+  pendingSaveTimer = window.setTimeout(writeMarkdownFile, 500);
+}
+
+async function pollMarkdownFile() {
+  if (!markdownFileHandle || isLoadingMarkdown || isWritingMarkdown || hasPendingLocalSave) {
+    return;
+  }
+
+  try {
+    const file = await markdownFileHandle.getFile();
+    if (file.lastModified === lastKnownFileModified) {
       return;
     }
 
-    try {
-      const markdown = await file.text();
-      loadMarkdown(markdown, `已读取 ${file.name}。`);
-    } catch (error) {
-      setStatus(`读取失败：${error.message}`);
-    }
-  });
+    const markdown = await file.text();
+    lastKnownFileModified = file.lastModified;
+    loadMarkdown(markdown, `检测到 ${markdownFileHandle.name} 已在外部修改，已刷新。`);
+  } catch (error) {
+    setStatus(`检测文件变化失败：${error.message}`);
+  }
+}
 
-  input.click();
+async function openMarkdownFile() {
+  if (!window.showOpenFilePicker) {
+    setStatus("当前浏览器不支持自动写回文件，请使用新版 Chrome 或 Edge。");
+    return;
+  }
+
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: "Markdown", accept: { "text/markdown": [".md", ".markdown"], "text/plain": [".txt"] } }],
+      excludeAcceptAllOption: false,
+      multiple: false,
+    });
+
+    if (!(await verifyFilePermission(handle, "readwrite"))) {
+      setStatus("没有文件读写权限，无法自动双向同步。");
+      return;
+    }
+
+    markdownFileHandle = handle;
+    const markdown = await readMarkdownFile();
+    loadMarkdown(markdown, `已绑定 ${handle.name}，网页修改会自动保存，外部修改会自动刷新。`);
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      setStatus(`选择失败：${error.message}`);
+    }
+  }
 }
 
 function renderAndPersist() {
@@ -334,6 +416,7 @@ function renderAndPersist() {
   applySettings(settings);
   fitToOnePage();
   localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
+  scheduleMarkdownSave();
 }
 
 async function init() {
@@ -354,6 +437,7 @@ async function init() {
   });
 
   window.addEventListener("resize", fitToOnePage);
+  window.setInterval(pollMarkdownFile, 1000);
 }
 
 init();
