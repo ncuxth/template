@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(claude mcp *)",
+      "Bash(CLAUDE_CODE_GIT_BASH_PATH=\"/c/Program Files/Git/bin/bash.exe\" claude mcp *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(claude mcp *)"
     ]
   }
 }
