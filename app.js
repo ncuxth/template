@@ -77,6 +77,14 @@ function renderInline(text) {
   return safe;
 }
 
+function parseAvatarLine(line) {
+  const match = line.trim().match(/^!\[[^\]]*\]\(([^)]+)\)$/);
+  if (!match) {
+    return null;
+  }
+  return match[1].trim();
+}
+
 function stripOuterBold(text) {
   const trimmed = text.trim();
   const match = trimmed.match(/^\*\*(.*)\*\*$/);
@@ -85,7 +93,9 @@ function stripOuterBold(text) {
 
 function splitTrailingDate(text) {
   const cleaned = stripOuterBold(text);
-  const datePattern = /\s*([（(]\s*(?:\d{4}\.\d{2}|至今|现在|Present|present)\s*[-~至]\s*(?:\d{4}\.\d{2}|至今|现在|Present|present)\s*[）)])\s*$/;
+  const dateToken = "(?:\\d{4}[.-]\\d{2}|至今|现在|Present|present)";
+  const rangeToken = `${dateToken}\\s*(?:-|~|至)\\s*${dateToken}`;
+  const datePattern = new RegExp(`\\s*((?:[（(]\\s*)?${rangeToken}(?:\\s*[）)])?)\\s*$`);
   const match = cleaned.match(datePattern);
 
   if (!match) {
@@ -108,7 +118,7 @@ function renderDatedLine(line) {
     return null;
   }
 
-  return `<div class="entry-row"><div class="entry-main">${renderInline(parts.main)}</div><time class="entry-date">${escapeHtml(parts.date)}</time></div>`;
+  return `<div class="entry-row"><div class="entry-title entry-main">${renderInline(parts.main)}</div><time class="entry-date">${escapeHtml(parts.date)}</time></div>`;
 }
 
 function closeList(state, html) {
@@ -139,7 +149,62 @@ function renderBodyLine(line) {
 function renderMarkdown(markdown) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const html = [];
-  const state = { listType: null, inSection: false, headerComplete: false };
+  const state = {
+    listType: null,
+    listIndent: 0,
+    inSection: false,
+    headerStarted: false,
+    headerRendered: false,
+    headerName: "",
+    headerMetaLines: [],
+    headerAvatar: null,
+    currentSectionTitle: "",
+    inProjectSection: false,
+    inProjectBlock: false,
+  };
+
+  const closeProjectBlock = () => {
+    if (!state.inProjectBlock) {
+      return;
+    }
+    closeList(state, html);
+    html.push("</div>");
+    state.inProjectBlock = false;
+  };
+
+  const openProjectBlock = () => {
+    if (!state.inProjectSection || state.inProjectBlock) {
+      return;
+    }
+    html.push('<div class="project-block">');
+    state.inProjectBlock = true;
+  };
+
+  const closeHeader = () => {
+    if (!state.headerStarted || state.headerRendered) {
+      return;
+    }
+
+    const metaHtml = state.headerMetaLines.map((meta) => `<p class="resume-meta-line">${renderInline(meta)}</p>`).join("");
+    const avatarHtml = state.headerAvatar
+      ? `<img class="resume-avatar" src="${escapeHtml(state.headerAvatar)}" alt="avatar" />`
+      : "";
+
+    html.push(`<header class="resume-header"><h1 class="resume-name">${renderInline(state.headerName)}</h1>${metaHtml}${avatarHtml}</header>`);
+    state.headerRendered = true;
+  };
+
+  const closeSection = () => {
+    if (!state.inSection) {
+      return;
+    }
+    closeProjectBlock();
+    closeList(state, html);
+    html.push("</section>");
+    state.inSection = false;
+    state.inProjectSection = false;
+    state.currentSectionTitle = "";
+  };
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
@@ -150,52 +215,65 @@ function renderMarkdown(markdown) {
     }
 
     if (line.startsWith("# ")) {
-      closeList(state, html);
-      if (state.inSection) {
-        html.push("</section>");
-        state.inSection = false;
-      }
-      html.push(`<header class="resume-header"><h1>${renderInline(line.slice(2).trim())}</h1>`);
-      state.headerComplete = false;
+      closeSection();
+      closeHeader();
+      state.headerStarted = true;
+      state.headerRendered = false;
+      state.headerName = line.slice(2).trim();
+      state.headerMetaLines = [];
+      state.headerAvatar = null;
       continue;
     }
 
     if (line.startsWith("## ")) {
-      closeList(state, html);
-      if (!state.headerComplete) {
-        html.push("</header>");
-        state.headerComplete = true;
-      }
-      if (state.inSection) {
-        html.push("</section>");
-      }
-      html.push(`<section class="section"><h2 class="section-title">${renderInline(line.slice(3).trim())}</h2>`);
+      closeHeader();
+      closeSection();
+      const sectionTitle = line.slice(3).trim();
+      html.push(`<section class="section"><h2 class="section-title">${renderInline(sectionTitle)}</h2>`);
       state.inSection = true;
+      state.currentSectionTitle = sectionTitle;
+      state.inProjectSection = /项目(经历|经验)/.test(sectionTitle);
+      continue;
+    }
+
+    if (state.headerStarted && !state.headerRendered && !state.inSection) {
+      const avatarSrc = parseAvatarLine(line);
+      if (avatarSrc && !state.headerAvatar) {
+        state.headerAvatar = avatarSrc;
+      } else {
+        state.headerMetaLines.push(line);
+      }
       continue;
     }
 
     if (line === "---") {
       closeList(state, html);
+      if (state.inProjectSection) {
+        closeProjectBlock();
+      }
       html.push('<hr class="project-separator" />');
       continue;
     }
 
-    if (!state.headerComplete && !state.inSection) {
-      html.push(`<p>${renderInline(line)}</p></header>`);
-      state.headerComplete = true;
-      continue;
+    if (state.inProjectSection) {
+      openProjectBlock();
     }
 
-    const ordered = line.match(/^\d+\.\s+(.+)$/);
-    const unordered = line.match(/^[-*]\s+(.+)$/);
-    if (ordered || unordered) {
-      const listType = ordered ? "ol" : "ul";
+    const listMatch = rawLine.match(/^(\s*)(\d+\.\s+|[-*]\s+)(.+)$/);
+    if (listMatch) {
+      const indent = listMatch[1].replace(/\t/g, "  ").length;
+      const listType = /^\d+\.\s+$/.test(listMatch[2]) ? "ol" : "ul";
+      if (indent >= 2) {
+        closeList(state, html);
+        html.push(`<ul class="nested-list"><li>${renderInline(listMatch[3].trim())}</li></ul>`);
+        continue;
+      }
       if (state.listType !== listType) {
         closeList(state, html);
         html.push(`<${listType}>`);
         state.listType = listType;
       }
-      html.push(`<li>${renderInline((ordered || unordered)[1])}</li>`);
+      html.push(`<li>${renderInline(listMatch[3].trim())}</li>`);
       continue;
     }
 
@@ -203,13 +281,8 @@ function renderMarkdown(markdown) {
     html.push(renderBodyLine(line));
   }
 
-  closeList(state, html);
-  if (!state.headerComplete) {
-    html.push("</header>");
-  }
-  if (state.inSection) {
-    html.push("</section>");
-  }
+  closeHeader();
+  closeSection();
 
   return html.join("");
 }
@@ -244,7 +317,7 @@ function setStatus(message) {
 }
 
 function renderPreview() {
-  els.preview.innerHTML = `<div class="resume-content">${renderMarkdown(els.markdown.value)}</div>`;
+  els.preview.innerHTML = `<div class="resume-content resume-template-blue-compact">${renderMarkdown(els.markdown.value)}</div>`;
   fitToOnePage();
 }
 

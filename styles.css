@@ -69,6 +69,11 @@ textarea {
   transform-origin: top left;
 }
 
+.resume-template-blue-compact {
+  --accent-blue: #216ed8;
+  --accent-blue-line: #2e7ee2;
+}
+
 .resume-page h1,
 .resume-page h2,
 .resume-page h3,
@@ -80,11 +85,13 @@ textarea {
 }
 
 .resume-header {
-  margin-bottom: 10px;
+  position: relative;
+  margin-bottom: 8px;
   text-align: center;
 }
 
-.resume-header h1 {
+.resume-header h1,
+.resume-name {
   margin: 0 0 3px;
   color: #132334;
   font-size: var(--name-font-size);
@@ -94,6 +101,25 @@ textarea {
 .resume-header p {
   margin: 0;
   font-size: var(--base-font-size);
+}
+
+.resume-meta-line {
+  margin: 0;
+  color: #223043;
+  font-size: calc(var(--base-font-size) - 0.2px);
+  line-height: 1.45;
+}
+
+.resume-avatar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 74px;
+  height: 92px;
+  border: 1px solid #d4ddeb;
+  border-radius: 3px;
+  object-fit: cover;
+  background: #fff;
 }
 
 .section {
@@ -109,6 +135,11 @@ textarea {
   line-height: 1.35;
 }
 
+.resume-template-blue-compact .section-title {
+  border-bottom: 2px solid var(--accent-blue-line);
+  color: var(--accent-blue);
+}
+
 .entry-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
@@ -121,11 +152,23 @@ textarea {
   min-width: 0;
 }
 
+.entry-title {
+  min-width: 0;
+}
+
 .entry-date {
   justify-self: end;
   white-space: nowrap;
   color: #34495e;
   font-weight: 500;
+}
+
+.resume-template-blue-compact .entry-row {
+  column-gap: 12px;
+}
+
+.resume-template-blue-compact .entry-date {
+  color: #2557a7;
 }
 
 .resume-page h3 {
@@ -156,6 +199,12 @@ textarea {
   margin-bottom: max(1px, calc(var(--paragraph-gap) - 1px));
 }
 
+.nested-list {
+  margin-top: 1px;
+  margin-bottom: 1px;
+  padding-left: 18px;
+}
+
 .resume-page strong {
   color: #15202b;
   font-weight: 700;
@@ -179,6 +228,36 @@ textarea {
   margin: 7px 0 5px;
   border: 0;
   border-top: 2px solid #262626;
+}
+
+.project-block {
+  margin: 2px 0;
+}
+
+.resume-template-blue-compact .project-block + .project-block {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #d4e4ff;
+}
+
+.resume-template-blue-compact .project-separator {
+  margin: 5px 0 3px;
+  border-top: 1px solid #d4e4ff;
+}
+
+.resume-template-blue-compact .resume-page p {
+  margin-bottom: max(1px, calc(var(--paragraph-gap) - 1px));
+}
+
+.resume-template-blue-compact .resume-page ul,
+.resume-template-blue-compact .resume-page ol {
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding-left: 18px;
+}
+
+.resume-template-blue-compact .resume-page li {
+  margin-bottom: 1px;
 }
 
 .control-panel {
